@@ -105,7 +105,9 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
       // 一度手動にして、その後またオートにしたい場合
       if (is_reauto) clearTimeout(is_reauto);
       is_reauto = setTimeout(() => {
-        is_auto = true;
+        if (!is_dragging) {
+          is_auto = true;          
+        }
       }, interval);
     }
 
