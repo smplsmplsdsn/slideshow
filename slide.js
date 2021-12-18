@@ -60,11 +60,13 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
   }
   
   /**
-   * ナビ表示（ナビがある場合）
+   * ナビ表示
    */
   const slideSetNav = () => {
+    tgt.attr('data-no', slide_no);
+    
     if (_link.length > 0) {
-      _link.removeClass('on');
+      _link.removeClass('on');      
       $('[data-nav="' + slide_no + '"]', tgt).addClass('on');
     }
   }  
