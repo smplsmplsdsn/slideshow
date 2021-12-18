@@ -1,0 +1,35 @@
+.slideshow__frame {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.slideshow__flex {
+  position: relative;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  height: 100%;
+}
+
+.slideshow__unit {
+  display: block;
+  width: 100%;
+  min-width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+/*# sourceMappingURL=slide.css.map */

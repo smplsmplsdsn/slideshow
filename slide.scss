@@ -1,0 +1,31 @@
+.slideshow {
+
+  &__frame {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    overflow: hidden;
+  }  
+
+  &__flex {
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100%;
+  }
+
+  &__unit {
+    display: block;
+    width: 100%;
+    min-width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+}
