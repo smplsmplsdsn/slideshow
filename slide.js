@@ -52,6 +52,7 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
    * エリア切り替え
    */
   const slideChange = () => {
+    w = tgt_unit.outerWidth();
     tgt_flex.stop().animate({
       left: w*(slide_no - 1)*(-1)
     });
