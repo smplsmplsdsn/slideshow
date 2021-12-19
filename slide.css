@@ -6,6 +6,7 @@
   bottom: 0;
   z-index: 1;
   overflow: hidden;
+  height: 100%;
 }
 
 .slideshow__flex {
