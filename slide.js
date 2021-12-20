@@ -23,6 +23,7 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
   const tgt = $(n),
         tgt_flex = $('.slideshow__flex', tgt),
         tgt_unit = $('.slideshow__unit', tgt),
+        _slide_link = $('.js-link-slideshow', tgt),
         _link = $('.js-slide-nav a', tgt),
         _link_out = (t)? $(t + ' .js-slide-link'): $('.js-slide-link');
   
@@ -32,7 +33,8 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
       is_auto,
       is_reauto,
       is_moving,
-      anime_auto;
+      anime_auto,
+      is_click;
 
   let slide_num = 0,
       slide_no = 1;
@@ -67,7 +69,7 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
     tgt.attr('data-no', slide_no);
     
     if (_link.length > 0) {
-      _link.removeClass('on');      
+      _link.removeClass('on');
       $('[data-nav="' + slide_no + '"]', tgt).addClass('on');
     }
   }  
@@ -212,6 +214,42 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
     slideChange();
     return false;
   });
+  
+  // スライド内リンク
+  // NOTICE: hrefをセットするとPCで手動スライドの挙動がおかしくなる
+  // e.g. <a class="" data-href="{URL}" target="_blank"></a>
+  if (slide.is_touch) {
+    _slide_link.each(function() {
+      let _this = $(this),
+          href = _this.attr('data-href');
+
+      _this.attr('href', href);
+    });
+  } else {
+    _slide_link
+    .on('mousedown', function () {
+      is_click = true;
+    })  
+    .on('mousemove', function() {
+      is_click = false;
+    })
+    .on('mouseup', function () {
+      let _this = $(this),
+          href = _this.attr('data-href');
+
+      if (is_click) {
+
+        if (_this.attr('target')) {
+          window.open(href);
+        } else {
+          location.href = href;            
+        }
+        
+        is_dragging = false;
+        return false;
+      }
+    });    
+  }
   
   // 外部からのリンク
   _link_out.on('click', function () {
