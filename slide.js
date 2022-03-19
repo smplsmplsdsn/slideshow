@@ -32,7 +32,6 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
   let is_dragging,
       is_auto,
       is_reauto,
-      is_moving,
       anime_auto,
       is_click;
 
@@ -134,7 +133,7 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
       slide_pos_start_x = slide_pos_x;
       slide_pos_start_y = slide_pos_y;
     })
-    .on(slide.end, () => {
+    .on(slide.end, (e) => {
       pos_scroll_x_diff = slide_pos_start_x - pos_scroll_x;
       pos_scroll_y_diff = slide_pos_start_y - pos_scroll_y;
       
@@ -145,29 +144,33 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
         } else if (pos_scroll_x_diff < -50) {
           slideNo('prev');
         }
+        
+        e.preventDefault();
       }    
       slideOut();
     })
     .on(slide.leave, slideOut)
     .on(slide.move, (e) => {
-
+      
       // ドラッグ＆ドロップ中であるか常に監視する
       if (is_dragging) {
         pos_scroll_x = (slide.is_touch)? e.touches[0].pageX: e.pageX;
         pos_scroll_y = (slide.is_touch)? e.touches[0].pageY: e.pageY;
-
-        pos_left = tgt_flex.css('left').replace("px", "");
         
-        // iPhoneでエリアを左右に早く移動し続けるとエリアが固まるための処置
-        if (!is_moving) {
-          is_moving = true;
+        pos_scroll_x_diff = slide_pos_start_x - pos_scroll_x;
+        pos_scroll_y_diff = slide_pos_start_y - pos_scroll_y;
+        
+        if (Math.abs(pos_scroll_x_diff) > 50) {
+            
           tgt_flex.css({
             left: pos_left - (slide_pos_x - pos_scroll_x)
           });
 
           slide_pos_x = pos_scroll_x;
-          is_moving = false;
+          
+          e.preventDefault();
         }
+
       }
     });
   }
