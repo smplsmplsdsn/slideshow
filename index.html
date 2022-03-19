@@ -20,8 +20,9 @@
       .slideshow__unit:nth-child(4) {background-image: url("img/4.jpg");}
       .slideshow__unit:nth-child(5) {background-image: url("img/5.jpg");}
       
-      /* test1 */
-      .test1 .slideshow__frame {
+      /* test1, test4 */
+      .test1 .slideshow__frame,
+      .test4 .slideshow__frame {
         width: 300px;
         height: 250px;
         margin: 0 auto;
@@ -58,7 +59,12 @@
         width: 50%;
         height: 150px;
         margin: auto;
-      }      
+      }
+      
+      /* test4 */
+      .test4 {
+        margin: 50px 0 0;
+      } 
     </style>
   </head>
   <body>
@@ -109,6 +115,19 @@
       </div>
     </div>
 
+    
+    <div class="slideshow test4">
+      <div class="slideshow__frame">
+        <div class="slideshow__flex">
+          <a class="slideshow__unit js-link-slideshow" data-href="#1"></a>
+          <a class="slideshow__unit js-link-slideshow" data-href="#2"></a>
+          <a class="slideshow__unit js-link-slideshow" data-href="#3"></a>
+          <a class="slideshow__unit js-link-slideshow" data-href="#4"></a>
+          <a class="slideshow__unit js-link-slideshow" data-href="#5"></a>
+        </div>
+      </div>
+    </div>
+    
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="slide.js"></script>
     <script type="text/javascript">
@@ -116,6 +135,7 @@
       slide.show('.test1', 2000, 5);
       slide.show('.test2');
       slide.show('#test3');     
+      slide.show('.test4');
     </script>
   </body>
 </html>
