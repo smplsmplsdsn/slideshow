@@ -10,6 +10,46 @@ slide.start = (slide.is_touch)? 'touchstart': 'mousedown';
 slide.move = (slide.is_touch)? 'touchmove': 'mousemove';
 slide.end = (slide.is_touch)? 'touchend': 'mouseup';
 slide.leave = (slide.is_touch)? 'touchleave': 'mouseleave';
+slide.is_session = (('sessionStorage' in window) && window['sessionStorage'] !== null);
+
+
+/**
+ * セッションストレージの呼び出しと保存
+ *
+ * @param {string} n* key
+ * @param {anything} v value vがない場合は、nの呼び出し
+ * @return {anything} vがあるときはストレージの文字列、ない場合はnの値
+ */
+slide.storage = (n, v) => {
+  let r = null;
+  
+  if (slide.is_session && typeof n !== 'undefined') {
+    if (typeof v !== 'undefined') {
+      if (typeof v === 'object') {
+        sessionStorage[n] = JSON.stringify(v);
+      } else {
+        sessionStorage[n] = v;        
+      }
+    } else {
+      try {
+        r = (new Function("return " + sessionStorage[n]))();
+//        r = JSON.parse(sessionStorage[n]);
+      } catch (e) {
+        r = sessionStorage[n];
+      }
+    }
+  }
+  return r;
+}
+
+/**
+ * セッションストレージ削除
+ *
+ * @param {string} n* セッションストレージのキー
+ */
+slide.storageDel = (n) => {
+  sessionStorage.removeItem(n);
+}
 
 /**
  * スライドショー
@@ -23,17 +63,17 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
   const tgt = $(n),
         tgt_flex = $('.slideshow__flex', tgt),
         tgt_unit = $('.slideshow__unit', tgt),
-        _slide_link = $('.js-link-slideshow', tgt),
         _link = $('.js-slide-nav a', tgt),
         _link_out = (t)? $(t + ' .js-slide-link'): $('.js-slide-link');
   
   let w = tgt_unit.outerWidth();
+
+  let array_href = [];
   
   let is_dragging,
       is_auto,
       is_reauto,
-      anime_auto,
-      is_click;
+      anime_auto;
 
   let slide_num = 0,
       slide_no = 1;
@@ -47,7 +87,13 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
       pos_scroll_x_diff,
       pos_scroll_y_diff,
       pos_left;
+
   
+  // 初期時に表示するスライド番号、セッションがある場合はそれを採用する
+  if (slide.storage(n)) {
+    no = slide.storage(n)
+    slide.storageDel(n)
+  }
 
   /**
    * エリア切り替え
@@ -125,7 +171,7 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
      */
     tgt
     .on(slide.start, (e) => {
-      is_dragging = true;    
+      is_dragging = false;    
       is_auto = false;   // オート切り替えを無効にする
 
       slide_pos_x = (slide.is_touch)? e.touches[0].pageX: e.pageX;
@@ -136,41 +182,47 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
     .on(slide.end, (e) => {
       pos_scroll_x_diff = slide_pos_start_x - pos_scroll_x;
       pos_scroll_y_diff = slide_pos_start_y - pos_scroll_y;
-      
-      if (Math.abs(pos_scroll_y_diff) < 50) {            
 
-        if (pos_scroll_x_diff > 50) {            
-          slideNo('next');
-        } else if (pos_scroll_x_diff < -50) {
-          slideNo('prev');
+      if (!is_dragging) {
+
+        if (array_href[slide_no - 1]) {
+          slide.storage(n, slide_no)
+          location.href = array_href[slide_no - 1];
         }
-        
-        e.preventDefault();
-      }    
-      slideOut();
+      } else {
+        if (Math.abs(pos_scroll_y_diff) < 50) {            
+
+          if (pos_scroll_x_diff > 50) {            
+            slideNo('next');
+          } else if (pos_scroll_x_diff < -50) {
+            slideNo('prev');
+          }
+          
+          e.preventDefault();
+        }    
+        slideOut();
+      }
     })
     .on(slide.leave, slideOut)
     .on(slide.move, (e) => {
       
       // ドラッグ＆ドロップ中であるか常に監視する
-      if (is_dragging) {
-        pos_scroll_x = (slide.is_touch)? e.touches[0].pageX: e.pageX;
-        pos_scroll_y = (slide.is_touch)? e.touches[0].pageY: e.pageY;
-        
-        pos_scroll_x_diff = slide_pos_start_x - pos_scroll_x;
-        pos_scroll_y_diff = slide_pos_start_y - pos_scroll_y;
-        
-        if (Math.abs(pos_scroll_x_diff) > 50) {
-            
-          tgt_flex.css({
-            left: pos_left - (slide_pos_x - pos_scroll_x)
-          });
-
-          slide_pos_x = pos_scroll_x;
+      is_dragging = true;
+      pos_scroll_x = (slide.is_touch)? e.touches[0].pageX: e.pageX;
+      pos_scroll_y = (slide.is_touch)? e.touches[0].pageY: e.pageY;
+      
+      pos_scroll_x_diff = slide_pos_start_x - pos_scroll_x;
+      pos_scroll_y_diff = slide_pos_start_y - pos_scroll_y;
+      
+      if (Math.abs(pos_scroll_x_diff) > 50) {
           
-          e.preventDefault();
-        }
+        tgt_flex.css({
+          left: pos_left - (slide_pos_x - pos_scroll_x)
+        });
 
+        slide_pos_x = pos_scroll_x;
+        
+        e.preventDefault();
       }
     });
   }
@@ -217,42 +269,7 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
     slideChange();
     return false;
   });
-  
-  // スライド内リンク
-  // NOTICE: hrefをセットするとPCで手動スライドの挙動がおかしくなる
-  // e.g. <a class="" data-href="{URL}" target="_blank"></a>
-  if (slide.is_touch) {
-    _slide_link.each(function() {
-      let _this = $(this),
-          href = _this.attr('data-href');
 
-      _this.attr('href', href);
-    });
-  } else {
-    _slide_link
-    .on('mousedown', function () {
-      is_click = true;
-    })  
-    .on('mousemove', function() {
-      is_click = false;
-    })
-    .on('mouseup', function () {
-      let _this = $(this),
-          href = _this.attr('data-href');
-
-      if (is_click) {
-
-        if (_this.attr('target')) {
-          window.open(href);
-        } else {
-          location.href = href;            
-        }
-        
-        is_dragging = false;
-        return false;
-      }
-    });    
-  }
   
   // 外部からのリンク
   _link_out.on('click', function () {
@@ -271,6 +288,18 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
    */
   const init = () => {
     slide_num = tgt_unit.length;    // スライドの数を取得する
+
+    // リンクがある場合に備え、配列に格納する
+    tgt_unit.each(function () {
+      const _this = $(this),
+            href = _this.attr('data-href')
+
+      if (href && href != '') {
+        array_href.push(href);
+      } else {
+        array_href.push(null);
+      }
+    })
 
     // 初期表示
     slide_no = no;
