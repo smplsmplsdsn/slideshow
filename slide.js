@@ -1,6 +1,5 @@
 /**
  * slideshow.scss と連動
- * https://sample.simplesimplesdesign.com/slide.v7/
  */
 const slide = {};
 
@@ -55,28 +54,40 @@ slide.storageDel = (n) => {
  * スライドショー
  *
  * @param (string) n: .slideshowに付与するclass/id e.g. .test1 or #test1
- * @param (number|null) interval: スライドの間隔(ミリ秒)。nullの場合はスライドショーは行わない
- * @param (number) no: 初期時に表示するスライド番号。初期は最初の「1」。
- * @param (string|null) t: 外部リンクを有効にするときのトリガー
+ * @param (object) obj
+ * 
+ * obj.interval (number|null|boolean(false)) スライドの間隔(ミリ秒)。nullもしくはfalseの場合はスライドショーは行わない
+ * obj.no (number) 初期時に表示するスライド番号。初期は最初の「1」。
+ * obj.t (object|null|boolean(false)) 外部リンクを有効にするときのトリガー object: jQuery e.g. $('.test')
+ * obj.before (function|null|boolean(false)) スライド移動前に実行する関数
+ * obj.after (function|null|boolean(false)) スライド移動後に実行する関数
+ * obj.click (function|null|boolean(false)) スライド上をクリックした際に実行する関数
+ * obj.is_keyboard (boolean|null) 左右のキーボードアクションを有効にするか
  */
-slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
+slide.show = (n = '.slideshow', obj = {}) => {
   const tgt = $(n),
         tgt_flex = $('.slideshow__flex', tgt),
         tgt_unit = $('.slideshow__unit', tgt),
         _link = $('.js-slide-nav a', tgt),
-        _link_out = (t)? $(t + ' .js-slide-link'): $('.js-slide-link');
+        _link_out = (obj.t)? $('.js-slide-link', obj.t): $('.js-slide-link')
   
-  let w = tgt_unit.outerWidth();
+  const interval = (obj.interval || obj.interval === false)? obj.interval: 3000,        
+        before_func = obj.before,
+        after_func = obj.after,
+        click_func = obj.click,
+        is_keyboard = obj.is_keyboard
 
-  let array_href = [];
+  let no = obj.no || 1
+  
+  let array_href = []
   
   let is_dragging,
       is_auto,
       is_reauto,
-      anime_auto;
+      anime_auto
 
   let slide_num = 0,
-      slide_no = 1;
+      slide_no = 1
 
   let slide_pos_x,
       slide_pos_y,
@@ -86,8 +97,15 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
       pos_scroll_y,
       pos_scroll_x_diff,
       pos_scroll_y_diff,
-      pos_left;
+      pos_left
 
+  let w = tgt_unit.width()
+
+  if (w === 0) {
+    setTimeout(() => {
+      w = tgt_unit.width()
+    }, 1)
+  }
   
   // 初期時に表示するスライド番号、セッションがある場合はそれを採用する
   if (slide.storage(n)) {
@@ -99,12 +117,21 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
    * エリア切り替え
    */
   const slideChange = () => {
-    w = tgt_unit.outerWidth();
-    tgt_flex.stop().animate({
-      left: w*(slide_no - 1)*(-1)
-    });
+    const new_w = tgt_unit.width()
+
+    if (before_func) before_func()
+
+    if (new_w != 0) {
+      w = new_w
+    }    
     
-    slideSetNav();
+    tgt_flex.stop().animate({
+      left: w * (slide_no - 1) * (-1)
+    }, () => {
+      if (after_func) after_func()
+    })
+    
+    slideSetNav()
   }
   
   /**
@@ -150,12 +177,11 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
      */
     const slideOut = () => {
       is_dragging = false;
-      slideChange();
       
       // 一度手動にして、その後またオートにしたい場合
       if (is_reauto) clearTimeout(is_reauto);
       is_reauto = setTimeout(() => {
-        if (!is_dragging) {
+        if (!is_dragging && interval) {
           is_auto = true;          
         }
       }, interval);
@@ -185,6 +211,8 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
 
       if (!is_dragging) {
 
+        if (click_func) click_func()
+
         if (array_href[slide_no - 1]) {
           slide.storage(n, slide_no)
           location.href = array_href[slide_no - 1];
@@ -197,9 +225,12 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
           } else if (pos_scroll_x_diff < -50) {
             slideNo('prev');
           }
+          slideChange();
           
           e.preventDefault();
+          
         }    
+           
         slideOut();
       }
     })
@@ -234,7 +265,6 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
     if (anime_auto) clearTimeout(anime_auto);
     anime_auto = setTimeout(() => {
       if (is_auto) {
-
         slideNo('next');
         slideChange();
       }    
@@ -246,7 +276,7 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
    *　リサイズ処理(幅情報を更新する)
    */
   $(window).on('resize', () => {
-    w = tgt_unit.outerWidth();
+    w = tgt_unit.width();
     tgt_flex.css('left', w*(slide_no - 1)*(-1));
   });
   
@@ -256,31 +286,35 @@ slide.show = (n = '.slideshow', interval = 3000, no = 1, t) => {
    * MEMO: アロー関数で記述すると、$(this)を認識しないので、無名関数で記述している
    */
   _link.on('click', function () {
-    let val = $(this).attr('data-nav');
+    let val = $(this).attr('data-nav') || 'next'
     
-    is_auto = false;
+    is_auto = false
     
     if (val === 'prev' || val === 'next') {
-      slideNo($(this).attr('data-nav'));      
+      slideNo(val)
     } else {
-      slide_no = (+val);
+      slide_no = (+val)
     }
     
-    slideChange();
-    return false;
+    slideChange()
+    return false
   });
 
   
   // 外部からのリンク
   _link_out.on('click', function () {
-    let val = $(this).attr('data-nav');
+    let val = $(this).attr('data-nav') || 'next'
     
-    w = tgt_unit.outerWidth();
+    is_auto = false
     
-    is_auto = false;
-    slide_no = (+val);
-    tgt_flex.css('left', w*(slide_no - 1)*(-1));
-    slideSetNav();
+    if (val === 'prev' || val === 'next') {
+      slideNo(val)
+    } else {
+      slide_no = (+val)
+    }
+    
+    slideChange()
+    return false
   });
   
   /**
