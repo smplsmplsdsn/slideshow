@@ -132,7 +132,11 @@
     <script type="text/javascript" src="slide.js"></script>
     <script type="text/javascript">
 
-      slide.show('.test1', 2000, 5);
+      slide.show('.test1', {
+        interval: 5000,
+        no: 2,
+        is_keyboard: true
+      });
       slide.show('.test2');
       slide.show('#test3');     
       slide.show('.test4');
