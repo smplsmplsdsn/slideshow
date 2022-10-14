@@ -273,6 +273,35 @@ slide.show = (n = '.slideshow', obj = {}) => {
   }
   
   /**
+   * キーボードによる切り替え
+   */
+  if (is_keyboard || $('.slideshow').length === 1) {
+    document.addEventListener('keydown', (e) => {
+      
+      switch (e.key) {
+        case 'ArrowLeft':
+          if (interval) {
+            slideAuto()
+          }
+          slideNo('prev');
+          slideChange();
+          break;
+        case 'ArrowRight':
+          if (interval) {
+            slideAuto()
+          }
+          slideNo('next');
+          slideChange();
+          break;
+
+        // default なし
+      }
+      return false
+    })
+  }
+
+  
+  /**
    *　リサイズ処理(幅情報を更新する)
    */
   $(window).on('resize', () => {
