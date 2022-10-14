@@ -77,7 +77,6 @@ slide.show = (n = '.slideshow', obj = {}) => {
         click_func = obj.click,
         is_keyboard = obj.is_keyboard
 
-  let no = obj.no || 1
   
   let array_href = []
   
@@ -87,7 +86,7 @@ slide.show = (n = '.slideshow', obj = {}) => {
       anime_auto
 
   let slide_num = 0,
-      slide_no = 1
+       slide_no = obj.no || 1
 
   let slide_pos_x,
       slide_pos_y,
@@ -109,7 +108,7 @@ slide.show = (n = '.slideshow', obj = {}) => {
   
   // 初期時に表示するスライド番号、セッションがある場合はそれを採用する
   if (slide.storage(n)) {
-    no = slide.storage(n)
+     slide_no = slide.storage(n)
     slide.storageDel(n)
   }
 
