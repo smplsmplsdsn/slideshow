@@ -9,6 +9,9 @@
     z-index: 1;
     overflow: hidden;
     height: 100%;
+    margin: 0;
+    padding: 0;
+    pointer-events: auto;
   }  
 
   &__flex {
@@ -20,6 +23,8 @@
     justify-content: flex-start;
     align-items: center;
     height: 100%;
+    margin: 0;
+    padding: 0;
     will-change: left;
   }
 
@@ -28,6 +33,8 @@
     width: 100%;
     min-width: 100%;
     height: 100%;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
   }
 }
