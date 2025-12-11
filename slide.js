@@ -112,6 +112,9 @@ slide.show = (n = '.slideshow', obj = {}) => {
     slide.storageDel(n)
   }
 
+  // Chromeでドラック＆ドロップ時にサムネイルが生成されるのを無効にする
+  $('img', tgt).attr('draggable', 'false')
+
   /**
    * エリア切り替え
    */
