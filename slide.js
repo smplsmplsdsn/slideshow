@@ -68,7 +68,8 @@ const slide = {}
    const tgt = $(n),
          tgt_flex = $('.slideshow__flex', tgt),
          tgt_unit = $('.slideshow__unit', tgt),
-         _link = $('.js-slide-nav a', tgt),
+         tgt_link = $('.js-slide-nav', tgt),
+         _link = $('a', tgt_link),
          _link_out = (obj.t)? $('.js-slide-link', obj.t): $('.js-slide-link')
  
    const interval = (obj.interval || obj.interval === false)? obj.interval: 3000,        
@@ -136,12 +137,17 @@ const slide = {}
     * ナビ表示
     */
    const slideSetNav = () => {
-     tgt.attr('data-no', slide_no)
-     
-     if (_link.length > 0) {
-       _link.removeClass('on')
-       $('[data-nav="' + slide_no + '"]', tgt).addClass('on')
-     }
+
+    if (tgt_unit.length > 1) {
+      tgt.attr('data-no', slide_no)
+      
+      if (_link.length > 0) {
+        _link.removeClass('on')
+        $('[data-nav="' + slide_no + '"]', tgt).addClass('on')
+      }
+    } else {
+      tgt_link.remove()
+    }    
    }  
    
    /**
@@ -304,7 +310,7 @@ const slide = {}
    $(window).on('resize', () => {
      w = tgt_unit.width()
      tgt_flex.css('left', w*(slide_no - 1)*(-1))
-   });
+   })
    
    /*
     * リンク処理
@@ -324,7 +330,7 @@ const slide = {}
      
      slideChange()
      return false
-   });
+   })
  
    
    // 外部からのリンク
@@ -341,7 +347,7 @@ const slide = {}
      
      slideChange()
      return false
-   });
+   })
    
    /**
     * 初期処理
